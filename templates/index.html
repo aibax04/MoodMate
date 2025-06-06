@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Mate - Your Emotional Companion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            transition: all 0.6s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.4s ease, width 0.3s ease, height 0.3s ease;
+        }
+
+        .star {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9997;
+            opacity: 0;
+            animation: float 3s ease-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+            border-radius: 50%;
+            filter: blur(1px);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+            z-index: -1;
+            border-radius: 25px;
+            background-size: 400%;
+            animation: borderGlow 8s linear infinite;
+            opacity: 0.7;
+            filter: blur(5px);
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .input-section:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid rgba(224, 224, 224, 0.5);
+            border-radius: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: 'Poppins', sans-serif;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), inset 0 2px 5px rgba(0,0,0,0.05);
+            background: white;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:hover::before {
+            left: 100%;
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            gap: 2rem;
+            grid-template-columns: 1fr;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .result-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mood-display {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .mood-emoji {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mood-emoji:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .mood-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: capitalize;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quote-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .quote-section::before, .quote-section::after {
+            content: '"';
+            font-size: 3rem;
+            color: rgba(102, 126, 234, 0.3);
+            position: absolute;
+        }
+
+        .quote-section::before {
+            top: -20px;
+            left: 10px;
+        }
+
+        .quote-section::after {
+            bottom: -40px;
+            right: 10px;
+        }
+
+        .quote-text {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            font-style: italic;
+            margin-bottom: 1rem;
+            color: #555;
+            font-weight: 500;
+            padding: 0 2rem;
+        }
+
+        .playlist-section {
+            text-align: center;
+        }
+
+        .playlist-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #333;
+            position: relative;
+            display: inline-block;
+        }
+
+        .playlist-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .spotify-embed {
+            width: 100%;
+            height: 380px;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .spotify-embed:hover {
+            transform: scale(1.01);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .error-message {
+            background: rgba(255, 238, 238, 0.9);
+            color: #c33;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            display: none;
+            font-weight: 500;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid #c33;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Mood-specific themes */
+        .theme-happy {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        }
+
+        .theme-sad {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+        }
+
+        .theme-angry {
+            background: linear-gradient(135deg, #FF6B6B 0%, #E55353 100%);
+        }
+
+        .theme-anxious {
+            background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+        }
+
+        .theme-excited {
+            background: linear-gradient(135deg, #FF9500 0%, #FF5722 100%);
+        }
+
+        .theme-calm {
+            background: linear-gradient(135deg, #4ECDC4 0%, #26A69A 100%);
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: floatParticle linear infinite;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .input-section {
+                padding: 1.8rem;
+            }
+
+            .result-card {
+                padding: 1.8rem;
+            }
+
+            .spotify-embed {
+                height: 300px;
+            }
+
+            .quote-text {
+                font-size: 1.3rem;
+                padding: 0;
+            }
+
+            .mood-emoji {
+                font-size: 4rem;
+            }
+
+            .mood-text {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">
+                <i class="fas fa-heart"></i> Mood Mate
+            </h1>
+            <p class="subtitle">Your personal emotional companion</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="feeling-text">How are you feeling today?</label>
+                <textarea 
+                    id="feeling-text" 
+                    class="text-input" 
+                    placeholder="Describe your feelings in a few words... (e.g., 'I'm feeling really excited about my new job!' or 'Having a tough day, feeling a bit down')"
+                ></textarea>
+            </div>
+            
+            <button id="analyze-btn" class="analyze-btn">
+                <span class="btn-text">Analyze My Mood</span>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Analyzing...</span>
+                </div>
+            </button>
+            
+            <div class="error-message" id="error-message"></div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-card" id="mood-card">
+                <div class="mood-display">
+                    <span class="mood-emoji" id="mood-emoji">😊</span>
+                    <div class="mood-text" id="mood-text">Happy</div>
+                </div>
+                
+                <div class="quote-section">
+                    <div class="quote-text" id="quote-text">
+                        "Happiness is not something ready made. It comes from your own actions."
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" id="playlist-card">
+                <div class="playlist-section">
+                    <h3 class="playlist-title">Music for your mood</h3>
+                    <iframe 
+                        id="spotify-embed" 
+                        class="spotify-embed"
+                        src="" 
+                        frameBorder="0" 
+                        allowtransparency="true" 
+                        allow="encrypted-media">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cursor and Star Trail Effect
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        let mouseX = 0, mouseY = 0;
+        let posX = 0, posY = 0;
+        let stars = [];
+
+        // Custom cursor movement
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Create stars occasionally
+            if (Math.random() > 0.7) {
+                createStar(e.clientX, e.clientY);
+            }
+        });
+
+        function createStar(x, y) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            document.body.appendChild(star);
+            
+            // Random direction and distance
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 20 + Math.random() * 50;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            star.style.left = `${x}px`;
+            star.style.top = `${y}px`;
+            
+            // Random color
+            const colors = ['#FFD700', '#FFA500', '#FFFFFF', '#667eea', '#764ba2'];
+            star.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Remove after animation
+            setTimeout(() => {
+                star.remove();
+            }, 3000);
+        }
+
+        function animateCursor() {
+            // Smooth movement for cursor
+            posX += (mouseX - posX) / 5;
+            posY += (mouseY - posY) / 5;
+            
+            cursor.style.left = `${posX}px`;
+            cursor.style.top = `${posY}px`;
+            
+            // More delayed movement for follower
+            cursorFollower.style.left = `${posX}px`;
+            cursorFollower.style.top = `${posY}px`;
+            
+            requestAnimationFrame(animateCursor);
+        }
+
+        // Button hover effects
+        document.querySelectorAll('button, a, input, textarea').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                cursor.style.background = 'rgba(255, 255, 255, 0.5)';
+                cursorFollower.style.width = '30px';
+                cursorFollower.style.height = '30px';
+                cursorFollower.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            });
+            
+            el.addEventListener('mouseleave', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                cursor.style.background = 'rgba(255, 255, 255, 0.7)';
+                cursorFollower.style.width = '40px';
+                cursorFollower.style.height = '40px';
+                cursorFollower.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            });
+        });
+
+        animateCursor();
+
+        // Mood analysis functionality
+        const moodEmojis = {
+            happy: '😊',
+            sad: '😢',
+            angry: '😠',
+            anxious: '😰',
+            excited: '🤩',
+            calm: '😌'
+        };
+
+        const feelingText = document.getElementById('feeling-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const btnText = document.querySelector('.btn-text');
+        const loading = document.querySelector('.loading');
+        const results = document.getElementById('results');
+        const errorMessage = document.getElementById('error-message');
+        const moodCard = document.getElementById('mood-card');
+        const playlistCard = document.getElementById('playlist-card');
+
+        analyzeBtn.addEventListener('click', analyzeMood);
+        feelingText.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                analyzeMood();
+            }
+        });
+
+        // Create floating particles
+        function createParticles() {
+            const particleCount = 20;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const size = Math.random() * 5 + 2;
+                const posX = Math.random() * window.innerWidth;
+                const duration = Math.random() * 15 + 10;
+                const delay = Math.random() * 5;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.bottom = '0';
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                document.body.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        async function analyzeMood() {
+            const text = feelingText.value.trim();
+            
+            if (!text) {
+                showError('Please describe how you\'re feeling first!');
+                return;
+            }
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            btnText.style.display = 'none';
+            loading.style.display = 'flex';
+            hideError();
+            hideResults();
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Something went wrong');
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                // Reset button
+                analyzeBtn.disabled = false;
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            // Update theme
+            document.body.className = `theme-${data.mood}`;
+            
+            // Update mood display
+            document.getElementById('mood-emoji').textContent = moodEmojis[data.mood] || '😊';
+            document.getElementById('mood-text').textContent = data.mood;
+            
+            // Update quote
+            document.getElementById('quote-text').textContent = `"${data.quote}"`;
+            
+            // Update playlist
+            document.getElementById('spotify-embed').src = data.playlist_url;
+            
+            // Show results with animation
+            results.style.display = 'block';
+            
+            setTimeout(() => {
+                moodCard.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                playlistCard.classList.add('show');
+            }, 300);
+        }
+
+        function hideResults() {
+            results.style.display = 'none';
+            moodCard.classList.remove('show');
+            playlistCard.classList.remove('show');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
